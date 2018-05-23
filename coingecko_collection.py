@@ -16,14 +16,17 @@ def main():
 
 	#For every coin id available.
 	for i in range(len(list)):
+		#Dictionary containing data per date.
 		jdata = {}
 		coinID = list[i]['id']
+		#For every day since 1/1/2016 till today.
 		for date in (datetime.date(2016, 1, 1) + datetime.timedelta(n) for n in range(day_count)):
 			print(coinID, str(date))
 			coinHistory = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/' + coinID + '/history?date='+ date.strftime("%d-%m-%Y"))
 			data = coinHistory.get_coingecko_data()
 			jdata[str(date)] = []
 			jdata[str(date)].append(data)
+		#Writing data for each currency to a json file with its name.
 		with open('data/' + coinID + '.json', 'w', encoding='utf8') as outputfile:
 			json.dump(jdata, outputfile, ensure_ascii=False)
 
