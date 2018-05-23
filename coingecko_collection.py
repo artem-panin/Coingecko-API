@@ -19,12 +19,12 @@ def main():
 		jdata = {}
 		coinID = list[i]['id']
 		for date in (datetime.date(2016, 1, 1) + datetime.timedelta(n) for n in range(day_count)):
-			print(str(date))
+			print(coinID, str(date))
 			coinHistory = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/' + coinID + '/history?date='+ date.strftime("%d-%m-%Y"))
 			data = coinHistory.get_coingecko_data()
 			jdata[str(date)] = []
 			jdata[str(date)].append(data)
-		with open(coinID + '.json', 'w', encoding='utf8') as outputfile:
+		with open('data/' + coinID + '.json', 'w', encoding='utf8') as outputfile:
 			json.dump(jdata, outputfile, ensure_ascii=False)
 
 if __name__ == '__main__':
