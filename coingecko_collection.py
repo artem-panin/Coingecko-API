@@ -3,8 +3,7 @@ import sys
 sys.path.append(r'H:/Data_Science/Python/coingecko')
 
 import coingecko_api as coin #Import API call code.
-import json
-import datetime
+import json, datetime, os.path
 
 
 def main():
@@ -19,6 +18,8 @@ def main():
 		#Dictionary containing data per date.
 		jdata = {}
 		coinID = list[i]['id']
+		#Skip this cryptocurrency if its JSON file already exists.
+		if os.path.exists('H:/Data_Science/Python/data/' + coinID + '.json'): continue
 		#For every day since 1/1/2016 till today.
 		for date in (datetime.date(2016, 1, 1) + datetime.timedelta(n) for n in range(day_count)):
 			print(coinID, str(date))
@@ -27,7 +28,7 @@ def main():
 			jdata[str(date)] = []
 			jdata[str(date)].append(data)
 		#Writing data for each currency to a json file with its name.
-		with open('data/' + coinID + '.json', 'w', encoding='utf8') as outputfile:
+		with open('H:/Data_Science/Python/data/' + coinID + '.json', 'w', encoding='utf8') as outputfile:
 			json.dump(jdata, outputfile, ensure_ascii=False)
 
 if __name__ == '__main__':
