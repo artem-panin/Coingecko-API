@@ -1,35 +1,51 @@
-#Code to add a path to System path in order to import other files from the coingecko folder.
-import sys
-sys.path.append(r'H:/Data_Science/Python/coingecko')
+import os
+pwd_path = os.getcwd()
+
+import warnings
+warnings.filterwarnings("ignore")
 
 import coingecko_api as coin #Import API call code.
-import json, datetime, os.path
-
+import datetime
+from tqdm import tqdm
+import pandas as pd
 
 def main():
-	coinList = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/list')
-	#Getting a JSOn with the data requested.
-	list = coinList.get_coingecko_data()
-	#Calculate the number of days from 1/1/2016 till today.
-	day_count = (datetime.date.today() - datetime.date(2016, 1, 1)).days
+    coinList = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/list')
+    #Getting a JSON with the data requested.
+    list = coinList.get_coingecko_data()
+    #Calculate the number of days from 1/1/2017 till today.
+    day_count = (datetime.date.today() - datetime.date(2017, 1, 1)).days
 
-	#For every coin id available.
-	for i in range(len(list)):
-		#Dictionary containing data per date.
-		jdata = {}
-		coinID = list[i]['id']
-		#Skip this cryptocurrency if its JSON file already exists.
-		if os.path.exists('H:/Data_Science/Python/data/' + coinID + '.json'): continue
-		#For every day since 1/1/2016 till today.
-		for date in (datetime.date(2016, 1, 1) + datetime.timedelta(n) for n in range(day_count)):
-			print(coinID, str(date))
-			coinHistory = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/' + coinID + '/history?date='+ date.strftime("%d-%m-%Y"))
-			data = coinHistory.get_coingecko_data()
-			jdata[str(date)] = []
-			jdata[str(date)].append(data)
-		#Writing data for each currency to a json file with its name.
-		with open('H:/Data_Science/Python/data/' + coinID + '.json', 'w', encoding='utf8') as outputfile:
-			json.dump(jdata, outputfile, ensure_ascii=False)
+    #For every coin id available.
+    for i in tqdm(range(len(list))):
+        #Dataframe containing data per date.
+        df = pd.DataFrame(columns = ['market_cap', 'total_volume', 'facebook_likes', 'twitter_followers', 'reddit_average_posts_48h', 'reddit_average_comments_48h', 'reddit_subscribers', 'reddit_accounts_active_48h', 'forks', 'stars', 'subscribers', 'total_issues', 'closed_issues', 'pull_requests_merged', 'pull_request_contributors', 'commit_count_4_weeks', 'alexa_rank', 'bing_matches'], 
+                          index=(datetime.date(2017, 1, 1) + datetime.timedelta(n) for n in range(day_count)))
+        coinID = list[i]['id']
+        print(list[i]['symbol'].upper())
+        #Skip this cryptocurrency if its JSON file already exists.
+        if os.path.exists(pwd_path + '/data/' + list[i]['symbol'].upper() + '.csv'): continue
+        #For every day since 1/1/2017 till today.
+        for date in tqdm((datetime.date(2017, 1, 1) + datetime.timedelta(n) for n in range(day_count)), total=day_count, unit="days"):
+            coinHistory = coin.CoingeckoAPI('https://api.coingecko.com/api/v3/coins/' + coinID + '/history?date='+ date.strftime("%d-%m-%Y"))
+            data = coinHistory.get_coingecko_data()
+            try:
+                #Save market data
+                for column in ['market_cap', 'total_volume']:
+                    df[column].loc[date] = data['market_data'][column]['usd']
+                #Save community data
+                for column in ['facebook_likes', 'twitter_followers', 'reddit_average_posts_48h', 'reddit_average_comments_48h', 'reddit_subscribers', 'reddit_accounts_active_48h']:
+                    df[column].loc[date] = data['community_data'][column]
+                #Save developer data
+                for column in ['forks', 'stars', 'subscribers', 'total_issues', 'closed_issues', 'pull_requests_merged', 'pull_request_contributors', 'commit_count_4_weeks']:
+                    df[column].loc[date] = data['developer_data'][column]  
+                #Save public interest data
+                for column in ['alexa_rank', 'bing_matches']:
+                    df[column].loc[date] = data['public_interest_stats'][column]
+            except Exception as e:
+                print(e)
+        #Writing data for each currency to a csv file with its name.
+        df.to_csv(pwd_path + '/data/' + list[i]['symbol'].upper() + '.csv', index_label='date')
 
 if __name__ == '__main__':
-	main()
+    main()
