@@ -1,0 +1,1 @@
+cryptocompare_data_path = "/Users/admin/Documents/projects/crypto/lib/data/input_intraday/USD/"
