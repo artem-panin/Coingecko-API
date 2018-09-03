@@ -54,7 +54,7 @@ def main():
                 for column in ['alexa_rank', 'bing_matches']:
                     df[column].loc[date] = data['public_interest_stats'][column]
             except Exception as e:
-                print(e)
+                pass        
         #Writing data for each currency to a csv file with its name.
         df.to_csv(os.getcwd() + '/data/' + tickers[i]['symbol'].upper() + '.csv', index_label='date')
 

@@ -1,1 +1,1 @@
-cryptocompare_data_path = "/Users/admin/Documents/projects/crypto/lib/data/input_intraday/USD/"
+cryptocompare_data_path = "/Users/admin/Documents/projects/crypto/lib_copy/data/input_intraday/USD/"
